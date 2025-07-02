@@ -1,0 +1,20 @@
+[build]
+  command = "bun install && bun run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/__nextjs"
+  status = 200
+
+[dev]
+  command = "bun run dev"
+  port = 3000
+
+# Functions configuration for Next.js API routes
+[functions]
+  directory = ".netlify/functions"

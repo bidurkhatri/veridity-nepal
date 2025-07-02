@@ -1,0 +1,197 @@
+// ... existing code ... <interfaces and types at the top>
+
+export interface CredentialIssuanceData {
+  credentialId: string;
+  status: 'issued' | 'pending' | 'rejected';
+  issuedDate?: string;
+}
+
+export interface APIHealthData {
+  status: 'healthy' | 'unhealthy' | 'error';
+  responseTime?: number;
+  uptime?: number;
+  error?: string;
+}
+
+export interface BatchVerificationData {
+  results: Array<{
+    identifier: string;
+    type: string;
+    verified: boolean;
+    details?: string;
+  }>;
+  summary: {
+    total: number;
+    verified: number;
+    failed: number;
+  };
+}
+
+export interface ZKProofData {
+  proof: string;
+  publicSignals: string[];
+  verificationKey: string;
+  claims: Record<string, boolean | number | string>;
+}
+
+// ... existing code ... <class definition and other methods>
+
+  // Create privacy-preserving credential request
+  async requestCredentialIssuance(
+    citizenshipNumber: string,
+    credentialType: string,
+    consentSignature: string
+  ): Promise<APIResponse<CredentialIssuanceData>> {
+    // Security validation
+    try {
+      const sanitizedCitizenshipNumber = sanitizeInput(citizenshipNumber);
+      const sanitizedCredentialType = sanitizeInput(credentialType);
+      const sanitizedConsentSignature = sanitizeInput(consentSignature);
+
+      if (!validateCitizenshipNumber(sanitizedCitizenshipNumber)) {
+        return {
+          success: false,
+          error: 'Invalid citizenship number format',
+          timestamp: Date.now(),
+          requestId: this.generateRequestId()
+        };
+      }
+
+      // Rate limiting check
+      if (!checkRateLimit('credential-issuance')) {
+        return {
+          success: false,
+          error: 'Rate limit exceeded. Please try again later.',
+          timestamp: Date.now(),
+          requestId: this.generateRequestId()
+        };
+      }
+
+      await this.delay(1500);
+
+      // Simulate credential issuance
+      const credentialData: CredentialIssuanceData = {
+        credentialId: this.generateCredentialId(),
+        status: 'issued',
+        issuedDate: new Date().toISOString()
+      };
+
+      return {
+        success: true,
+        data: credentialData,
+        timestamp: Date.now(),
+        requestId: this.generateRequestId()
+      };
+
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      return {
+        success: false,
+        error: errorMessage,
+        timestamp: Date.now(),
+        requestId: this.generateRequestId()
+      };
+    }
+  }
+
+  // Simulate API health check
+  async checkAPIHealth(apiEndpoint: string): Promise<APIResponse<APIHealthData>> {
+    await this.delay(300);
+
+    const healthData: APIHealthData = {
+      status: Math.random() > 0.1 ? 'healthy' : 'unhealthy',
+      responseTime: Math.floor(Math.random() * 1000) + 100,
+      uptime: 99.8
+    };
+
+    return {
+      success: true,
+      data: healthData,
+      timestamp: Date.now(),
+      requestId: this.generateRequestId()
+    };
+  }
+
+  async batchVerifyCredentials(
+    records: Array<{type: string, identifier: string}>
+  ): Promise<APIResponse<BatchVerificationData>> {
+    await this.delay(2000);
+
+    const results = records.map(record => ({
+      identifier: record.identifier,
+      type: record.type,
+      verified: Math.random() > 0.2,
+      details: 'Verification completed via government API'
+    }));
+
+    const verifiedCount = results.filter(r => r.verified).length;
+
+    const batchData: BatchVerificationData = {
+      results,
+      summary: {
+        total: records.length,
+        verified: verifiedCount,
+        failed: records.length - verifiedCount
+      }
+    };
+
+    return {
+      success: true,
+      data: batchData,
+      timestamp: Date.now(),
+      requestId: this.generateRequestId()
+    };
+  }
+
+  async generatePrivacyPreservingProof(
+    citizenshipNumber: string,
+    requiredClaims: string[]
+  ): Promise<APIResponse<ZKProofData>> {
+    await this.delay(800);
+
+    // Only extract minimal required data for proof generation
+    const claims: Record<string, boolean | number | string> = {};
+
+    for (const claim of requiredClaims) {
+      switch(claim) {
+        case 'age_over_18':
+          claims[claim] = true;
+          break;
+        case 'nepali_citizen':
+          claims[claim] = true;
+          break;
+        case 'province':
+          claims[claim] = 'Bagmati';
+          break;
+        case 'education_level':
+          claims[claim] = 'bachelors';
+          break;
+        default:
+          claims[claim] = false;
+      }
+    }
+
+    const proofData: ZKProofData = {
+      proof: "0x" + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+      publicSignals: Object.values(claims).map(v => v.toString()),
+      verificationKey: "vk_" + Math.random().toString(36).substring(2, 15),
+      claims
+    };
+
+    return {
+      success: true,
+      data: proofData,
+      timestamp: Date.now(),
+      requestId: this.generateRequestId()
+    };
+  }
+
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  private generateCredentialId(): string {
+    return `cred_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+// ... existing code ... <rest of the class>
